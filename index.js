@@ -1,5 +1,5 @@
 const {MongoClient} = require('mongodb');
-const uri = "mongodb+srv://myAtlasDBUser:5GDArMvUMaXc4mqQ@infosecvms.nex96ta.mongodb.net/";
+const uri = "mongodb+srv://myAtlasDBUser:onVguRi5iKQsSKQm@infosecvms.nex96ta.mongodb.net/";
 const client = new MongoClient(uri);
 
 var jwt = require('jsonwebtoken');
@@ -409,10 +409,10 @@ app.post('/user/registerVisitor', async function(req, res){
  * @swagger
  * /user/login:
  *   post:
- *     summary: Authenticate user
- *     description: Login with identification number and password
+ *     summary: User login
+ *     description: Endpoint for user login.
  *     tags:
- *       - Staff
+ *       - User
  *     requestBody:
  *       required: true
  *       content:
@@ -425,16 +425,14 @@ app.post('/user/registerVisitor', async function(req, res){
  *               password:
  *                 type: string
  *     responses:
- *       '200':
- *         description: Login successful
- *         content:
- *           text/plain:
- *             schema:
- *               type: string
- *       '400':
- *         description: Invalid request body
- *       '401':
- *         description: Unauthorized - Invalid credentials
+ *       200:
+ *         description: Successful login
+ *       400:
+ *         description: Invalid input
+ *       401:
+ *         description: Unauthorized
+ *       500:
+ *         description: Internal Server Error
  */
 app.post('/user/login', async function(req, res){
     const { identification_No, password } = req.body;
