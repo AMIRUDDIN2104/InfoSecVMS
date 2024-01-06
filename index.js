@@ -796,7 +796,6 @@ app.post('/user/login', async function(req, res){
  *                 type: string
  *               password:
  *                 type: string
- *               // Add other properties for host account creation
  *     responses:
  *       '200':
  *         description: Host account created successfully
