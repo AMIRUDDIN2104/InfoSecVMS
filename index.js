@@ -829,7 +829,6 @@ app.post('/create/host', async function(req, res) {
                 fullName: fullName,
                 email: email,
                 phone: phone
-                // Add other properties as needed
             };
             await client.connect();
             await client.db("VMS").collection("Hosts").insertOne(hostAccount);
