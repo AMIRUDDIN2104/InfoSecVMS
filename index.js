@@ -768,6 +768,64 @@ app.post('/visitor/logout', async function(req, res){
     }
 });
 
+
+/**
+ * @swagger
+ * /create/host:
+ *   post:
+ *     summary: Create a new host account
+ *     description: Create a new host account with required details
+ *     tags:
+ *       - Security
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               username:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               // Add other properties for host account creation
+ *     responses:
+ *       '200':
+ *         description: Host account created successfully
+ *       '400':
+ *         description: Invalid request body or insufficient permissions
+ *       '401':
+ *         description: Unauthorized - Invalid token or insufficient permissions
+ *     consumes:
+ *       - "application/json"
+ *     produces:
+ *       - "application/json"
+ *   securityDefinitions:
+ *     JWT:
+ *       type: "apiKey"
+ *       name: "Authorization"
+ *       in: "header"
+ */
+app.post('/create/host', async function(req, res) {
+    const token = req.header('Authorization').split(" ")[1];
+    try {
+        const decoded = jwt.verify(token, privatekey);
+        if (decoded.role === "Security") {
+            // Logic to create a new host account
+            // Extract details from req.body and perform necessary actions
+
+            res.send("Host account created successfully");
+        } else {
+            res.status(401).send("Unauthorized - Insufficient permissions");
+        }
+    } catch (err) {
+        res.status(401).send("Unauthorized - Invalid token");
+    }
+});
+
+
 app.get('/', (req, res)=>{
     res.send("Testing deployment from zaidzaihan.azurewebsites.net");
 });
