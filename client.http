@@ -1,0 +1,21 @@
+POST http://localhost:3000/create/host
+Content-Type: application/json
+Authorization: Bearer 
+
+{
+  "username": "newhost",
+  "password": "password123",
+  "fullName": "New Host",
+  "email": "newhost@example.com",
+  "phone": "123456789"
+}
+
+###
+
+POST http://localhost:3000/user/login
+Content-Type: application/json
+
+{
+  "identification_No": "13135",
+  "password": "VMSinfosec"
+}

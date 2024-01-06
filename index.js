@@ -768,6 +768,12 @@ app.post('/visitor/logout', async function(req, res){
     }
 });
 
+//login post for staff
+app.post('/user/login', async function(req, res){
+    const { identification_No, password } = req.body;
+    const hashedPassword = await generateHash(password);
+    await login(res, identification_No, hashedPassword);
+});
 
 /**
  * @swagger
@@ -812,10 +818,21 @@ app.post('/create/host', async function(req, res) {
     const token = req.header('Authorization').split(" ")[1];
     try {
         const decoded = jwt.verify(token, privatekey);
+        console.log("Decoded Token:", decoded);
         if (decoded.role === "Security") {
             // Logic to create a new host account
+            const { username, password, fullName, email, phone } = req.body;
             // Extract details from req.body and perform necessary actions
-
+            const hostAccount = {
+                username: username,
+                password: password,  // Note: You should hash the password before saving it to the database
+                fullName: fullName,
+                email: email,
+                phone: phone
+                // Add other properties as needed
+            };
+            await client.connect();
+            await client.db("VMS").collection("Hosts").insertOne(hostAccount);
             res.send("Host account created successfully");
         } else {
             res.status(401).send("Unauthorized - Insufficient permissions");
