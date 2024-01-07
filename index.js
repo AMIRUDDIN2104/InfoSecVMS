@@ -542,73 +542,76 @@ app.post('/security/register', async function(req, res){
  * /user/register:
  *   post:
  *     summary: Register a new staff member
- *     consumes:
- *       - application/json
- *     produces:
- *       - application/json
- *     parameters:
- *       - in: body
- *         name: staffDetails
- *         description: Staff details for registration
- *         required: true
- *         schema:
- *           type: object
- *           properties:
- *             identification_No:
- *               type: string
- *               description: Unique identification number for the staff
- *             name:
- *               type: string
- *               description: Name of the staff
- *             password:
- *               type: string
- *               description: Staff password
- *             phone_number:
- *               type: string
- *               description: Staff phone number
+ *     description: Register a new staff member with identification number, name, password, and phone number.
+ *     tags:
+ *       - Security
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               identification_No:
+ *                 type: string
+ *               name:
+ *                 type: string
+ *               password:
+ *                 type: string
+ *               phone_number:
+ *                 type: string
  *     responses:
  *       '200':
  *         description: Staff registered successfully
- *         schema:
- *           type: object
- *           properties:
- *             message:
- *               type: string
- *               description: Success message
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: Success message
  *       '400':
- *         description: Staff already exists
- *         schema:
- *           type: object
- *           properties:
- *             error:
- *               type: string
- *               description: Error message for existing staff
+ *         description: Staff already exists or bad request
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   description: Error message for existing staff or bad request
  *       '403':
  *         description: Unauthorized access
- *         schema:
- *           type: object
- *           properties:
- *             error:
- *               type: string
- *               description: Error message for unauthorized access
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   description: Unauthorized access error message
  *       '500':
  *         description: Failed to register staff or unauthorized access
- *         schema:
- *           type: object
- *           properties:
- *             error:
- *               type: string
- *               description: Error message for failed registration or unauthorized access
- *     tags:
- *       - Security
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 error:
+ *                   type: string
+ *                   description: Error message for registration failure or unauthorized access
  */
+
 //user to register
 app.post('/user/register', async function(req, res) {
-    const { identification_No, name, password, phone_number } = req.body;
-    const hashedPassword = await generateHash(password);
     const token = req.headers.authorization.split(' ')[1];
-    
     try {
+        const { identification_No, name, password, phone_number } = req.body;
+        const hashedPassword = await generateHash(password);
+        
         // Verify the JWT token
         const decodedToken = jwt.verify(token, privatekey);
         
@@ -626,15 +629,16 @@ app.post('/user/register', async function(req, res) {
         }
         
         // Logic to register the new staff
-        const result = await registerStaff(identification_No, name, hashedPassword, phone_number);
+        await registerStaff(identification_No, name, hashedPassword, phone_number);
+        
         // Send success response upon successful registration
-        res.status(200).json({ message: 'Staff registered successfully' });
+        return res.status(200).json({ message: 'Staff registered successfully' });
     } catch (error) {
         // Send error response if registration fails or token validation fails
-        res.status(500).json({ error: 'Failed to register staff or unauthorized access' });
+        console.error(error);
+        return res.status(500).json({ error: 'Failed to register staff or unauthorized access' });
     }
 });
-
 
 //login post for staff
 /**
@@ -1194,7 +1198,7 @@ app.get('/security/visitor-pass/:identification_No/host-contact', async function
 
 app.get('/', (req, res)=>{
     res.send("Testing deployment from zaidzaihan.azurewebsites.net");
-});
+})
 
 
 app.listen(port, () => {
