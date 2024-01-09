@@ -343,6 +343,7 @@ async function viewVisitors(identification_No, role) {
 }
 
 
+
 //post method to register visitor
 /**
  * @swagger
@@ -661,6 +662,7 @@ app.post('/user/register', async function(req, res) {
 });
 
 
+
 //login post for staff
 /**
  * @swagger
@@ -757,6 +759,7 @@ app.post('/user/logout', async function(req, res){
         res.status(500).json({ message: 'An error occurred' });
     }
 });
+
 
 
 //delete visitors
@@ -1383,9 +1386,13 @@ app.get('/security/visitor-pass/:identification_No/host-contact', async function
 });
 
 
+
+
+
 app.get('/', (req, res)=>{
-    res.send("Testing deployment from vms-amir-azaril.azurewebsites.net");
+    res.send("Testing deployment from zaidzaihan.azurewebsites.net");
 });
+
 
 
 app.listen(port, () => {
