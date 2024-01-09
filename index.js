@@ -1,5 +1,5 @@
 const {MongoClient} = require('mongodb');
-const uri = "mongodb+srv://zaidzaihan1611:n2kRMBbjonlmy6rF@vms.qotxlyq.mongodb.net/";
+const uri = "mongodb+srv://myAtlasDBUser:onVguRi5iKQsSKQm@infosecvms.nex96ta.mongodb.net/";
 const client = new MongoClient(uri);
 
 var jwt = require('jsonwebtoken');
@@ -1378,7 +1378,7 @@ app.get('/security/visitor-pass/:identification_No/host-contact', async function
 
 
 app.get('/', (req, res)=>{
-    res.send("Testing deployment from zaidzaihan.azurewebsites.net");
+    res.send("Testing deployment from vms-amir-azaril.azurewebsites.net");
 });
 
 app.listen(port, () => {
