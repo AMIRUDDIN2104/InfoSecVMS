@@ -42,6 +42,7 @@ const options = {
     apis: ['./index.js'],
 };
 
+
 const swaggerSpec = swaggerJsdoc(options);
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
@@ -83,7 +84,8 @@ async function registerAdmin(identification_No, name, hashedPassword, phone_numb
 async function register(host, identification_No, name, gender, ethnicity, temperature, dateofbirth, citizenship, document_type, expiryDate, address, town, postcode, state, country, phone_number, vehicle_number, vehicle_type, visitor_category, preregistered_pass, no_of_visitors, purpose_of_visit, visit_limit_hrs, visit_limit_min, To_meet, Host_Information, Location_or_department, Unit_no, Location_Information, Permit_number, Delivery_Order, Remarks, fever, sore_throat, dry_cough, runny_nose, shortness_of_breath, body_ache, travelled_oversea_last_14_days, contact_with_person_with_Covid_19, recovered_from_covid_19, covid_19_test, date, hostContact){
     await client.connect();
     const exist = await client.db("VMS").collection("Visitors").findOne({identification_No: identification_No});
-    const host_contact = await client.db("VMS").collection("User_Info").findOne(host);
+    const host_contact = await client.db("VMS").collection("UserInfo").findOne({ identification_No: host });
+    const host_number =  await host_contact.phone_number;
     //hashed = await bcrypt.hash(password,10);
     if(exist){
         console.log("User is already registered!");
@@ -120,7 +122,7 @@ async function register(host, identification_No, name, gender, ethnicity, temper
             Permit_number: Permit_number,
             Delivery_Order: Delivery_Order, 
             Remarks: Remarks,
-            hostContact: host_contact.phone_number
+            hostContact: host_number
 
         });
         await client.db("VMS").collection("Health Status").insertOne({
@@ -144,13 +146,14 @@ async function register(host, identification_No, name, gender, ethnicity, temper
     }
 }
 
+
 //update Visitor for admin
 async function updateVisitor(host, identification_No, name, gender, ethnicity, temperature, dateofbirth, citizenship, document_type, expiryDate, address, town, postcode, state, country, phone_number, vehicle_number, vehicle_type, visitor_category, preregistered_pass, no_of_visitors, purpose_of_visit, visit_limit_hrs, visit_limit_min, To_meet, Host_Information, Location_or_department, Unit_no, Location_Information, Permit_number, Delivery_Order, Remarks, fever, sore_throat, dry_cough, runny_nose, shortness_of_breath, body_ache, travelled_oversea_last_14_days, contact_with_person_with_Covid_19, recovered_from_covid_19, covid_19_test, date) {
     try {
       // Connect to the MongoDB server
       await client.connect();
       console.log('Connected to the MongoDB server');
-      const host_number = await client.db("VMS").collection("User_Info").findOne(host);
+      const host_number = await client.db("VMS").collection("UserInfo").findOne(host);
       const exist = await client.db("VMS").collection("Visitors").findOne({ identification_No: identification_No });
       if (exist) {
         await client.db("VMS").collection("Visitors").updateOne(
@@ -251,6 +254,7 @@ async function updateVisitor(host, identification_No, name, gender, ethnicity, t
     }
 }
 
+
 //Logs function
 async function logs(identification_No, name, role) {
     const options = { timeZone: 'Asia/Kuala_Lumpur' }; // Set the time zone to Malaysia
@@ -271,7 +275,8 @@ async function logs(identification_No, name, role) {
         exit_time: "pending"
     });
 }
-  
+
+    
 //login for staff
 async function login(res, identification, password) {
     await client.connect();
@@ -304,6 +309,7 @@ async function login(res, identification, password) {
     }
 }
 
+
 async function visitorLogin(res, Identification_No){
     await client.connect();
     const exist = await client.db("VMS").collection("Visitors").findOne({identification_No: Identification_No});
@@ -335,6 +341,7 @@ async function viewVisitors(identification_No, role) {
         return null; // Return null or another suitable value to indicate an error
     }
 }
+
 
 
 //post method to register visitor
@@ -478,7 +485,7 @@ app.post('/user/registerVisitor', async function(req, res){
         try {
             const host = decoded.identification_No
 
-            await register(host,identification_No, name, gender, ethnicity, temperature, dateofbirth, citizenship, document_type, expiryDate, address, town, postcode, state, country, phone_number, vehicle_number, vehicle_type, visitor_category, preregistered_pass, no_of_visitors, purpose_of_visit, visit_limit_hrs, visit_limit_min, To_meet, Host_Information, Location_or_department, Unit_no, Location_Information, Permit_number, Delivery_Order, Remarks, fever, sore_throat, dry_cough, runny_nose, shortness_of_breath, body_ache, travelled_oversea_last_14_days, contact_with_person_with_Covid_19, recovered_from_covid_19, covid_19_test, date);
+            await register(host, identification_No, name, gender, ethnicity, temperature, dateofbirth, citizenship, document_type, expiryDate, address, town, postcode, state, country, phone_number, vehicle_number, vehicle_type, visitor_category, preregistered_pass, no_of_visitors, purpose_of_visit, visit_limit_hrs, visit_limit_min, To_meet, Host_Information, Location_or_department, Unit_no, Location_Information, Permit_number, Delivery_Order, Remarks, fever, sore_throat, dry_cough, runny_nose, shortness_of_breath, body_ache, travelled_oversea_last_14_days, contact_with_person_with_Covid_19, recovered_from_covid_19, covid_19_test, date);
             res.send("Registered visitor successfully!");
         } catch (error) {
             console.error(error);
@@ -655,6 +662,7 @@ app.post('/user/register', async function(req, res) {
 });
 
 
+
 //login post for staff
 /**
  * @swagger
@@ -752,6 +760,8 @@ app.post('/user/logout', async function(req, res){
     }
 });
 
+
+
 //delete visitors
 /**
  * @swagger
@@ -808,6 +818,8 @@ if(decoded.role == "Admin"|| decoded.role == "Staff"){
         res.send("No access!");
     }
 });
+
+
 
 //login post for visitor
 /**
@@ -918,11 +930,70 @@ app.post('/user/view/visitor', async function(req, res){
  *               expiryDate:
  *                 type: string
  *                 format: date
- *               # Add other properties here...
+ *               address:
+ *                 type: string
+ *               town:
+ *                 type: string
+ *               postcode:
+ *                 type: string
+ *               state:
+ *                 type: string
+ *               country:
+ *                 type: string
+ *               phone_number:
+ *                 type: string
+ *               vehicle_number:
+ *                 type: string
+ *               vehicle_type:
+ *                 type: string
+ *               visitor_category:
+ *                 type: string
+ *               preregistered_pass:
+ *                 type: string
+ *               no_of_visitors:
+ *                 type: integer
+ *               purpose_of_visit:
+ *                 type: string
+ *               visit_limit_hrs:
+ *                 type: integer
+ *               visit_limit_min:
+ *                 type: integer
+ *               To_meet:
+ *                 type: string
+ *               Host_Information:
+ *                 type: string
+ *               Location_or_department:
+ *                 type: string
+ *               Unit_no:
+ *                 type: string
+ *               Location_Information:
+ *                 type: string
+ *               Permit_number:
+ *                 type: string
+ *               Delivery_Order:
+ *                 type: string
+ *               Remarks:
+ *                 type: string
+ *               fever:
+ *                 type: boolean
+ *               sore_throat:
+ *                 type: boolean
+ *               dry_cough:
+ *                 type: boolean
+ *               runny_nose:
+ *                 type: boolean
+ *               shortness_of_breath:
+ *                 type: boolean
+ *               body_ache:
+ *                 type: boolean
+ *               travelled_oversea_last_14_days:
+ *                 type: boolean
+ *               contact_with_person_with_Covid_19:
+ *                 type: boolean
  *               recovered_from_covid_19:
- *                 type: string
+ *                 type: boolean
  *               covid_19_test:
- *                 type: string
+ *                 type: boolean
  *               date:
  *                 type: string
  *                 format: date
@@ -937,12 +1008,8 @@ app.post('/user/view/visitor', async function(req, res){
  *       - "application/json"
  *     produces:
  *       - "application/json"
- *   securityDefinitions:
- *     JWT:
- *       type: "apiKey"
- *       name: "Authorization"
- *       in: "header"
  */
+
 
 app.post('/user/updateVisitor', async function(req, res){
     var token = req.header('Authorization').split(" ")[1];
@@ -997,6 +1064,7 @@ app.post('/user/view/Logs', async function(req, res){
         res.send("No access!");
     }
 })
+
 
 // return pass for visitor
 /**
@@ -1126,11 +1194,6 @@ app.post('/Admin/register', async function(req, res){
  *         description: ID of the user to update role
  *         required: true
  *         type: string
- *       - in: header
- *         name: Authorization
- *         description: Access token
- *         required: true
- *         type: string
  *       - in: body
  *         name: userRole
  *         description: User role information for update
@@ -1179,6 +1242,8 @@ app.post('/Admin/register', async function(req, res){
  *               description: Error message for failed update or unauthorized access
  *     tags:
  *       - Admin
+ *     security:
+ *       - bearerAuth: []
  */
 app.put('/Admin/manage-roles/:userId', async function(req, res) {
     const { userId } = req.params;
@@ -1192,9 +1257,9 @@ app.put('/Admin/manage-roles/:userId', async function(req, res) {
         }
 
         await client.connect();
-        const updatedUser = await client.db("VMS").collection("UserInfo").findOneAndUpdate(
-            { _id: ObjectId(userId) },
-            { $set: { role } },
+        const updatedUser = await client.db("VMS").findOneAndUpdate(
+            { identification_No: userId },
+            { $set: { role: role } },
             { returnOriginal: false }
         );
 
@@ -1222,11 +1287,6 @@ app.put('/Admin/manage-roles/:userId', async function(req, res) {
  *       - in: path
  *         name: identification_No
  *         description: Identification number from the visitor pass
- *         required: true
- *         type: string
- *       - in: header
- *         name: Authorization
- *         description: Access token
  *         required: true
  *         type: string
  *     responses:
@@ -1264,6 +1324,8 @@ app.put('/Admin/manage-roles/:userId', async function(req, res) {
  *               description: Error message for failed retrieval or unauthorized access
  *     tags:
  *       - Security
+ *     security:
+ *       - bearerAuth: []
  */
 
 app.get('/security/visitor-pass/:identification_No/host-contact', async function(req, res) {
@@ -1279,7 +1341,7 @@ app.get('/security/visitor-pass/:identification_No/host-contact', async function
 
         // Logic to retrieve host's contact number from the visitor pass
         await client.connect();
-        const visitorPass = await client.db("VMS").collection("").findOne({ identification_No });
+        const visitorPass = await client.db("VMS").collection("Visitors").findOne({ identification_No });
 
         if (visitorPass && visitorPass.hostContact) {
             res.status(200).json({ hostContact: visitorPass.hostContact });
@@ -1291,9 +1353,15 @@ app.get('/security/visitor-pass/:identification_No/host-contact', async function
     }
 });
 
+
+
+
+
 app.get('/', (req, res)=>{
-    res.send("Testing deployment from zaidzaihan.azurewebsites.net");
+    res.send("Testing deployment from vms-amir-azaril.azurewebsites.net");
 });
+
+
 
 app.listen(port, () => {
     console.log(`Server listening at port ${port}`)
