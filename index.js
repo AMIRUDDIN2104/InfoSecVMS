@@ -343,7 +343,6 @@ async function viewVisitors(identification_No, role) {
 }
 
 
-
 //post method to register visitor
 /**
  * @swagger
@@ -662,7 +661,6 @@ app.post('/user/register', async function(req, res) {
 });
 
 
-
 //login post for staff
 /**
  * @swagger
@@ -759,7 +757,6 @@ app.post('/user/logout', async function(req, res){
         res.status(500).json({ message: 'An error occurred' });
     }
 });
-
 
 
 //delete visitors
@@ -1180,98 +1177,130 @@ app.post('/Admin/register', async function(req, res){
 
 //Additional API
 /**
- * @swagger
- * /Admin/manage-roles/{userId}:
- *   put:
- *     summary: Update user role by authenticated administrator
- *     consumes:
- *       - application/json
- *     produces:
- *       - application/json
- *     parameters:
- *       - in: path
- *         name: userId
- *         description: ID of the user to update role
- *         required: true
- *         type: string
- *       - in: body
- *         name: userRole
- *         description: User role information for update
- *         required: true
- *         schema:
- *           type: object
- *           properties:
- *             role:
- *               type: string
- *               description: New role to be assigned to the user
- *     responses:
- *       '200':
- *         description: Account role updated successfully
- *         schema:
- *           type: object
- *           properties:
- *             message:
- *               type: string
- *               description: Success message
- *             updatedUser:
- *               type: object
- *               description: Updated user information
- *       '403':
- *         description: Unauthorized access
- *         schema:
- *           type: object
- *           properties:
- *             error:
- *               type: string
- *               description: Error message for unauthorized access
- *       '404':
- *         description: User not found
- *         schema:
- *           type: object
- *           properties:
- *             error:
- *               type: string
- *               description: Error message for user not found
- *       '500':
- *         description: Failed to update account role or unauthorized access
- *         schema:
- *           type: object
- *           properties:
- *             error:
- *               type: string
- *               description: Error message for failed update or unauthorized access
- *     tags:
- *       - Admin
- *     security:
- *       - bearerAuth: []
- */
+* @swagger
+* /Admin/manage-roles/{userId}:
+*   put:
+*     summary: Update user role by authenticated administrator
+*     description: Update user role based on the provided user ID for an authenticated administrator
+*     tags:
+*       - Admin
+*     security:
+*       - bearerAuth: []  # Assuming you're using bearer token authentication
+*     parameters:
+*       - in: path
+*         name: userId
+*         description: ID of the user to update role
+*         required: true
+*         schema:
+*           type: string
+*       - in: body
+*         name: userRole
+*         description: User role information for update
+*         required: true
+*         schema:
+*           type: object
+*           properties:
+*             role:
+*               type: string
+*               description: New role to be assigned to the user
+*     responses:
+*       '200':
+*         description: Account role updated successfully
+*         content:
+*           application/json:
+*             schema:
+*               type: object
+*               properties:
+*                 message:
+*                   type: string
+*                   description: Success message
+*                 updatedUser:
+*                   type: object
+*                   description: Updated user information (excluding sensitive fields)
+*       '401':  # Unauthorized (more specific than 403)
+*         description: Unauthorized access
+*         content:
+*           application/json:
+*             schema:
+*               type: object
+*               properties:
+*                 error:
+*                   type: string
+*                   description: Error message for unauthorized access
+*       '403':  # Forbidden (if applicable)
+*         description: Forbidden access
+*         content:
+*           application/json:
+*             schema:
+*               type: object
+*               properties:
+*                 error:
+*                   type: string
+*                   description: Error message for forbidden access
+*       '404':
+*         description: User not found
+*         content:
+*           application/json:
+*             schema:
+*               type: object
+*               properties:
+*                 error:
+*                   type: string
+*                   description: Error message for user not found
+*       '500':
+*         description: Failed to update account role
+*         content:
+*           application/json:
+*             schema:
+*               type: object
+*               properties:
+*                 error:
+*                   type: string
+*                   description: Error message for failed update
+*     consumes:
+*       - application/json
+*     produces:
+*       - application/json
+*/
+
 app.put('/Admin/manage-roles/:userId', async function(req, res) {
-    const { userId } = req.params;
-    const { role } = req.body;
-    const token = req.headers.authorization.split(' ')[1];
     try {
-        const decodedToken = jwt.verify(token, privatekey);
-
-        if (decodedToken.role !== 'admin') {
-            return res.status(403).json({ error: 'Unauthorized access' });
-        }
-
-        await client.connect();
-        const updatedUser = await client.db("VMS").findOneAndUpdate(
-            { identification_No: userId },
-            { $set: { role: role } },
-            { returnOriginal: false }
+      await client.connect();
+  
+      const { userId } = req.params;
+      const { role } = req.body;
+      const token = req.headers.authorization.split(' ')[1];
+  
+      const decodedToken = jwt.verify(token, privatekey);
+  
+      if (decodedToken.role !== 'Admin') {
+        return res.status(403).json({ error: 'Unauthorized access' });
+      }
+  
+      const userToUpdate = await client.db("VMS").collection("UserInfo").findOne({ identification_No: userId });
+  
+      if (userToUpdate) {
+        const updatedUser = await client.db("VMS").collection("UserInfo").updateOne(
+          { identification_No: userId },
+          { $set: { role: role } }
         );
-
-        if (updatedUser.value) {
-            res.status(200).json({ message: 'Account role updated successfully', updatedUser });
+  
+        if (updatedUser.matchedCount > 0) {
+          res.status(200).json({ message: 'Account role updated successfully' });
         } else {
-            res.status(404).json({ error: 'User not found' });
+          res.status(500).json({ error: 'Failed to update user role' });
         }
+      } else {
+        res.status(404).json({ error: 'User not found' });
+      }
     } catch (error) {
-        res.status(500).json({ error: 'Failed to update account role or unauthorized access' });
+      console.error(error);
+      res.status(500).json({ error: 'Failed to update account role or unauthorized access' });
+    } finally {
+      await client.close();
     }
-});
+  });
+
 
 // Endpoint for authenticated security to retrieve host contact number from visitor pass
 /**
@@ -1354,13 +1383,9 @@ app.get('/security/visitor-pass/:identification_No/host-contact', async function
 });
 
 
-
-
-
 app.get('/', (req, res)=>{
     res.send("Testing deployment from vms-amir-azaril.azurewebsites.net");
 });
-
 
 
 app.listen(port, () => {
