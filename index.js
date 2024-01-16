@@ -3,7 +3,7 @@ const uri = "mongodb+srv://myAtlasDBUser:onVguRi5iKQsSKQm@infosecvms.nex96ta.mon
 const client = new MongoClient(uri);
 
 var jwt = require('jsonwebtoken');
-const privatekey = "helloworld";
+const privatekey = "amirwashere";
 var token;
 
 const express = require('express');
@@ -501,7 +501,7 @@ app.post('/user/registerVisitor', async function(req, res){
  * /security/register:
  *   post:
  *     summary: Register a security personnel
- *     description: Register a new security personnel with identification number, name, password, and role.
+ *     description: Register a new security personnel with identification number, name, password, and role. Requires a strong password.
  *     tags:
  *       - Security
  *     requestBody:
@@ -517,6 +517,10 @@ app.post('/user/registerVisitor', async function(req, res){
  *                 type: string
  *               password:
  *                 type: string
+ *                 format: password
+ *                 minLength: 8
+ *                 pattern: "^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$"
+ *                 description: Password must be at least 8 characters long, contain at least one letter, one number, and one special character.
  *     responses:
  *       '200':
  *         description: Security personnel registered successfully
@@ -529,7 +533,7 @@ app.post('/user/registerVisitor', async function(req, res){
  *                   type: string
  *                   description: Success message
  *       '400':
- *         description: Identification number already exists or bad request
+ *         description: Identification number already exists, bad request, or weak password
  *         content:
  *           application/json:
  *             schema:
@@ -537,7 +541,7 @@ app.post('/user/registerVisitor', async function(req, res){
  *               properties:
  *                 error:
  *                   type: string
- *                   description: Error message for existing identification number or bad request
+ *                   description: Error message for existing identification number, bad request, or weak password
  *       '500':
  *         description: Registration failed or internal server error
  *         content:
@@ -549,6 +553,7 @@ app.post('/user/registerVisitor', async function(req, res){
  *                   type: string
  *                   description: Error message for registration failure or internal server error
  */
+
 
 app.post('/security/register', async function(req, res){
     const { identification_No, name, password } = req.body;
@@ -627,6 +632,7 @@ app.post('/security/register', async function(req, res){
 
 //user to register
 app.post('/user/register', async function(req, res) {
+    
     try {
         const token = req.headers.authorization.split(' ')[1];
         const { identification_No, name, password, phone_number } = req.body;
