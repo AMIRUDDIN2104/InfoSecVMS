@@ -342,6 +342,14 @@ async function viewVisitors(identification_No, role) {
     }
 }
 
+async function validatePassword(password) {
+    // Implement your password policy validation logic here
+    // For example, minimum length, uppercase, lowercase, numbers, special characters, etc.
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])/;
+    const minLength = 8;
+
+    return password.length >= minLength && passwordRegex.test(password);
+}
 
 //post method to register visitor
 /**
@@ -566,14 +574,7 @@ app.post('/security/register', async function(req, res){
     await createSecurityPersonnel(res, identification_No, name, hashedPassword);
 });
 
-function validatePassword(password) {
-    // Implement your password policy validation logic here
-    // For example, minimum length, uppercase, lowercase, numbers, special characters, etc.
-    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])/;
-    const minLength = 8;
 
-    return password.length >= minLength && passwordRegex.test(password);
-}
 
 
 /**
@@ -598,7 +599,7 @@ function validatePassword(password) {
  *               name:
  *                 type: string
  *               password:
- *                 type: string
+ *                 type: "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])"  # Strong password pattern
  *               phone_number:
  *                 type: string
  *     responses:
@@ -650,6 +651,12 @@ app.post('/user/register', async function(req, res) {
     try {
         const token = req.headers.authorization.split(' ')[1];
         const { identification_No, name, password, phone_number } = req.body;
+        
+        // Password policy validation
+        const isPasswordValid = validatePassword(password);
+        if (!isPasswordValid) {
+        return res.status(400).json({ error: 'Password does not meet the required policy.' });
+        }
         const hashedPassword = await generateHash(password);
         
         // Verify the JWT token
@@ -1135,7 +1142,7 @@ app.post('/visitor/returnPass', async function(req, res){
  *               name:
  *                 type: string
  *               password:
- *                 type: string
+ *                 type: "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])"  # Strong password pattern
  *               phone_number:
  *                 type: string
  *     responses:
@@ -1172,6 +1179,13 @@ app.post('/visitor/returnPass', async function(req, res){
  */
 app.post('/Admin/register', async function(req, res){
     const { identification_No, name, password, phone_number } = req.body;
+
+    // Password policy validation
+    const isPasswordValid = validatePassword(password);
+    if (!isPasswordValid) {
+        return res.status(400).json({ error: 'Password does not meet the required policy.' });
+    }
+
     const hashedPassword = await generateHash(password); // Encrypting the password
     try {
         await client.connect();
