@@ -501,7 +501,7 @@ app.post('/user/registerVisitor', async function(req, res){
  * /security/register:
  *   post:
  *     summary: Register a security personnel
- *     description: Register a new security personnel with identification number, name, password, and role. Requires a strong password.
+ *     description: Register a new security personnel with identification number, name, password, and role.
  *     tags:
  *       - Security
  *     requestBody:
@@ -517,10 +517,6 @@ app.post('/user/registerVisitor', async function(req, res){
  *                 type: string
  *               password:
  *                 type: string
- *                 format: password
- *                 minLength: 8
- *                 pattern: "^(?=.*[A-Za-z])(?=.*\d)(?=.*[@$!%*#?&])[A-Za-z\d@$!%*#?&]{8,}$"
- *                 description: Password must be at least 8 characters long, contain at least one letter, one number, and one special character.
  *     responses:
  *       '200':
  *         description: Security personnel registered successfully
@@ -533,7 +529,7 @@ app.post('/user/registerVisitor', async function(req, res){
  *                   type: string
  *                   description: Success message
  *       '400':
- *         description: Identification number already exists, bad request, or weak password
+ *         description: Identification number already exists or bad request
  *         content:
  *           application/json:
  *             schema:
@@ -541,7 +537,7 @@ app.post('/user/registerVisitor', async function(req, res){
  *               properties:
  *                 error:
  *                   type: string
- *                   description: Error message for existing identification number, bad request, or weak password
+ *                   description: Error message for existing identification number or bad request
  *       '500':
  *         description: Registration failed or internal server error
  *         content:
@@ -553,6 +549,8 @@ app.post('/user/registerVisitor', async function(req, res){
  *                   type: string
  *                   description: Error message for registration failure or internal server error
  */
+
+
 
 
 app.post('/security/register', async function(req, res){
