@@ -55,7 +55,7 @@ const rateLimit = require('express-rate-limit');
 const loginLimiter = rateLimit({
     windowMs: 15 * 60 * 1000, // 15 minutes
     max: 5, // limit each identification_No to 5 requests per windowMs
-    message: 'Too many login attempts from this identification_No, please try again after 15 minutes.',
+    message: { error:'Too many login attempts from this identification_No, please try again after 15 minutes.'},
   });
 
 //Generate Hash for password
@@ -729,7 +729,7 @@ app.post('/user/register', async function(req, res) {
  *         description: Unauthorized - Invalid credentials
  */
 app.post('/user/login', loginLimiter, async function(req, res){
-    const { identification_No, passwor } = req.body;
+    const { identification_No, password } = req.body;
     await login(res, identification_No, password);
 });
 
