@@ -51,6 +51,13 @@ var hashed;
 
 app.use(express.json())
 
+const rateLimit = require('express-rate-limit');
+const loginLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 5, // limit each identification_No to 5 requests per windowMs
+    message: 'Too many login attempts from this identification_No, please try again after 15 minutes.',
+  });
+
 //Generate Hash for password
 async function generateHash(password) {
     const saltRounds = 10;
@@ -688,7 +695,6 @@ app.post('/user/register', async function(req, res) {
 });
 
 
-//login post for staff
 /**
  * @swagger
  * /user/login:
@@ -722,7 +728,7 @@ app.post('/user/register', async function(req, res) {
  *       '401':
  *         description: Unauthorized - Invalid credentials
  */
-app.post('/user/login', async function(req, res){
+app.post('/user/login', loginLimiter, async function(req, res){
     const { identification_No, password } = req.body;
     await login(res, identification_No, password);
 });
@@ -1162,7 +1168,7 @@ app.post('/visitor/returnPass', async function(req, res){
  *           application/json:
  *             schema:
  *               type: object
- *               properties:
+ *               poperties:
  *                 error:
  *                   type: string
  *                   description: Error message for existing admin
