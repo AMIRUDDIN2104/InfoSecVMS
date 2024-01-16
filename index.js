@@ -729,7 +729,7 @@ app.post('/user/register', async function(req, res) {
  *         description: Unauthorized - Invalid credentials
  */
 app.post('/user/login', loginLimiter, async function(req, res){
-    const { identification_No, password } = req.body;
+    const { identification_No, passwor } = req.body;
     await login(res, identification_No, password);
 });
 
