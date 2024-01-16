@@ -517,6 +517,8 @@ app.post('/user/registerVisitor', async function(req, res){
  *                 type: string
  *               password:
  *                 type: string
+ *                 minLength: 8   # Minimum length of the password
+ *                 pattern: "^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])"  # Strong password pattern
  *     responses:
  *       '200':
  *         description: Security personnel registered successfully
@@ -550,15 +552,29 @@ app.post('/user/registerVisitor', async function(req, res){
  *                   description: Error message for registration failure or internal server error
  */
 
-
-
-
 app.post('/security/register', async function(req, res){
     const { identification_No, name, password } = req.body;
+
+    // Password policy validation
+    const isPasswordValid = validatePassword(password);
+    if (!isPasswordValid) {
+        return res.status(400).json({ error: 'Password does not meet the required policy.' });
+    }
+
     const hashedPassword = await generateHash(password);
 
-    await createSecurityPersonnel(res,identification_No, name, hashedPassword);
+    await createSecurityPersonnel(res, identification_No, name, hashedPassword);
 });
+
+function validatePassword(password) {
+    // Implement your password policy validation logic here
+    // For example, minimum length, uppercase, lowercase, numbers, special characters, etc.
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%^&*])/;
+    const minLength = 8;
+
+    return password.length >= minLength && passwordRegex.test(password);
+}
+
 
 /**
  * @swagger
