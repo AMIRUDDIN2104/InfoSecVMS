@@ -1,6 +1,7 @@
 const { MongoClient } = require('mongodb');
-const uri = "mongodb+srv://zaidzaihan1611:n2kRMBbjonlmy6rF@vms.qotxlyq.mongodb.net/?retryWrites=true&w=majoritymongodb+srv://admin:zufGjkGWbKyCKcNB@infosecvms.nex96ta.mongodb.net/?retryWrites=true&w=majority";
+const uri = "mongodb+srv://admin:zufGjkGWbKyCKcNB@infosecvms.nex96ta.mongodb.net/?retryWrites=true&w=majority";
 const client = new MongoClient(uri);
+
 
 var jwt = require('jsonwebtoken');
 const privatekey = "gr0upZ41dd4n4dh4";
@@ -170,6 +171,7 @@ async function register(host, identification_No, name, gender, ethnicity, temper
         await client.close();
     }
 }
+
 
 
 //update Visitor for admin
@@ -355,6 +357,7 @@ async function login(res, identification, password) {
     }
 }
 
+
 async function visitorLogin(res, identification_No) {
     try {
         await client.connect();
@@ -383,6 +386,7 @@ async function visitorLogin(res, identification_No) {
         res.status(500).json({ error: "Internal server error" });
     }
 }
+
 
 
 //view visitor
@@ -427,6 +431,7 @@ async function viewVisitors(identification_No, role) {
         return { error: 'Internal server error' }; // Return an appropriate error response
     }
 }
+
 
 //post method to register visitor
 /**
@@ -588,6 +593,7 @@ app.post('/user/registerVisitor', async function(req, res){
         res.status(403).send("Forbidden: You do not have access");
     }
 });
+
 
 
 /**
@@ -772,6 +778,7 @@ app.post('/user/register', async function(req, res) {
         return res.status(500).json({ error: 'Failed to register staff or unauthorized access' });
     }
 });
+
 
 
 //register user without authentication
@@ -994,6 +1001,7 @@ app.post('/user/logout', async function(req, res){
 });
 
 
+
 //delete visitors
 /**
  * @swagger
@@ -1050,6 +1058,7 @@ if(decoded.role == "Admin"|| decoded.role == "Staff"){
         res.send("No access!");
     }
 });
+
 
 
 //login post for visitor
@@ -1289,6 +1298,7 @@ app.post('/user/view/Logs', async function(req, res){
         res.send("No access!");
     }
 })
+
 
 // return pass for visitor
 /**
@@ -1638,9 +1648,11 @@ app.get('/security/visitor-pass/:identification_No/host-contact', async function
 });
 
 
+
 app.get('/', (req, res)=>{
     res.send("Testing deployment from amirazarilvms.azurewebsites.net");
 });
+
 
 
 app.listen(port, () => {
