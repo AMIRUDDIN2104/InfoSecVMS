@@ -1,5 +1,5 @@
 const { MongoClient } = require('mongodb');
-const uri = "mongodb+srv://admin:zufGjkGWbKyCKcNB@infosecvms.nex96ta.mongodb.net/?retryWrites=true&w=majority";
+const uri = "mongodb+srv://zaidzaihan1611:n2kRMBbjonlmy6rF@vms.qotxlyq.mongodb.net/?retryWrites=true&w=majoritymongodb+srv://admin:zufGjkGWbKyCKcNB@infosecvms.nex96ta.mongodb.net/?retryWrites=true&w=majority";
 const client = new MongoClient(uri);
 
 var jwt = require('jsonwebtoken');
@@ -12,6 +12,7 @@ const loginLimiter = rateLimit({
     max: 5, // 5 requests per window
     message: 'Too many login attempts from this IP, please try again after 15 minutes',
 });
+
 
 const express = require('express');
 const app = express();
@@ -253,29 +254,49 @@ async function updateVisitor(host, identification_No, name, gender, ethnicity, t
 
   async function createSecurityPersonnel(res, identification_No, name, password) {
     try {
+        // Password policy checks
+        if (password.length < 8) {
+            return res.status(400).json({ error: 'Password must be at least 8 characters long' });
+        }
+
+        // Check for at least one capital letter
+        if (!/[A-Z]/.test(password)) {
+            return res.status(400).json({ error: 'Password must contain at least one capital letter' });
+        }
+
+        // Check for at least one unique character (e.g., special character)
+        if (!/[^a-zA-Z0-9]/.test(password)) {
+            return res.status(400).json({ error: 'Password must contain at least one special character' });
+        }
+
+        // Check for at least one number
+        if (!/\d/.test(password)) {
+            return res.status(400).json({ error: 'Password must contain at least one number' });
+        }
+
         await client.connect();
         const exist = await client.db("VMS").collection("UserInfo").findOne({ identification_No });
 
         if (exist) {
-            res.status(400).send({ error: "Identification number already exists" });
-        } else {
-            const newSecurityPersonnel = {
-                identification_No,
-                name,
-                password,
-                role: "Security"
-            };
+            return res.status(400).json({ error: "Identification number already exists" });
+        }
 
-            const result = await client.db("VMS").collection("UserInfo").insertOne(newSecurityPersonnel);
-            if (result) {
-                res.status(200).send({ message: "Security personnel registered successfully" });
-            } else {
-                res.status(500).send({ error: "Registration failed" });
-            }
+        const newSecurityPersonnel = {
+            identification_No,
+            name,
+            password,
+            role: "Security"
+        };
+
+        const result = await client.db("VMS").collection("UserInfo").insertOne(newSecurityPersonnel);
+        if (result) {
+            res.status(200).json({ message: "Security personnel registered successfully" });
+        } else {
+            res.status(500).json({ error: "Registration failed" });
         }
     } catch (error) {
         console.error(error);
-        res.status(500).send({ error: "An error occurred" });
+        res.status(500).json({ error: "An error occurred" });
     }
 }
 
@@ -333,7 +354,6 @@ async function login(res, identification, password) {
         res.status(500).send("Error occurred: " + error.message);
     }
 }
-
 
 async function visitorLogin(res, identification_No) {
     try {
@@ -407,7 +427,6 @@ async function viewVisitors(identification_No, role) {
         return { error: 'Internal server error' }; // Return an appropriate error response
     }
 }
-
 
 //post method to register visitor
 /**
@@ -523,6 +542,8 @@ async function viewVisitors(identification_No, role) {
  *         description: Invalid request body or insufficient permissions
  *       '401':
  *         description: Unauthorized - Invalid token or insufficient permissions
+ *       '500':
+ *         description: Unauthorized - Error during token validation/ No token given.
  *     consumes:
  *       - "application/json"
  *     produces:
@@ -530,11 +551,12 @@ async function viewVisitors(identification_No, role) {
  */
 
 app.post('/user/registerVisitor', async function(req, res){
-    let decoded;
-
-    const token = req.header('Authorization').split(" ")[1];
 
     try {
+        let decoded;
+
+        const token = req.header('Authorization').split(" ")[1];
+
         decoded = jwt.verify(token, privatekey);
         if (!decoded || !decoded.role) {
             res.status(401).send("Unauthorized: Invalid or missing token");
@@ -972,7 +994,6 @@ app.post('/user/logout', async function(req, res){
 });
 
 
-
 //delete visitors
 /**
  * @swagger
@@ -1268,7 +1289,6 @@ app.post('/user/view/Logs', async function(req, res){
         res.send("No access!");
     }
 })
-
 
 // return pass for visitor
 /**
@@ -1621,6 +1641,7 @@ app.get('/security/visitor-pass/:identification_No/host-contact', async function
 app.get('/', (req, res)=>{
     res.send("Testing deployment from amirazarilvms.azurewebsites.net");
 });
+
 
 app.listen(port, () => {
     console.log(`Server listening at port ${port}`)
